@@ -12,7 +12,10 @@ import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.annotations.Marker
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.maps.MapView
@@ -28,8 +31,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     private lateinit var map: MapboxMap
     private lateinit var permissionsManager: PermissionsManager
     private lateinit var originLocation: Location
+    private lateinit var originPosition: Point
+    private lateinit var destinationPosition: Point
+
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
+    private var destinationMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +95,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         if(lastLocation!= null) {
             originLocation = lastLocation
             setCameraPosition(lastLocation)
-            Log.d("dmm","dmm")
         } else {
             locationEngine?.addLocationEngineListener(this)
         }
