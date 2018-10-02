@@ -1,6 +1,9 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.tienle.ref
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -10,9 +13,9 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.OnCompleteListener
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -30,42 +33,39 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnToMapActivity.setOnClickListener {
-            val intent: Intent = Intent(this, MapsActivity::class.java)
+            val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
         }
         locationPermission()
 
-        val urlJSON = "http://api.openweathermap.org/data/2.5/weather?q=London&appid=${apiKey}&units=Imperial"
-        getWeatherInfo().execute(urlJSON)
-
         getUserLocation {
-            Toast.makeText(applicationContext,"lat: ${it.latitude}",Toast.LENGTH_LONG).show()
+            val userLocationLat = it.latitude
+            val userLocationLng = it.longitude
+            val urlWeather = "http://api.openweathermap.org/data/2.5/weather?lat=$userLocationLat&lon=$userLocationLng&appid=$apiKey&units=Imperial"
+            GetWeatherInfo().execute(urlWeather)
         }
 
-//        val userLocation = getUserLocation()
-//
-//        if(userLocation != null) {
-//            Toast.makeText(applicationContext,"lat: ${userLocation.latitude}",Toast.LENGTH_LONG).show()
-//        } else {
-//            Toast.makeText(applicationContext,"null cmmr",Toast.LENGTH_LONG).show()
-//        }
     }
 
-    inner class getWeatherInfo: AsyncTask<String, Void, String?>() {
+    @Suppress("DEPRECATION")
+    @SuppressLint("StaticFieldLeak")
+    inner class GetWeatherInfo: AsyncTask<String, Void, String?>() {
+        private val progressDialog = ProgressDialog(this@MainActivity)
+        @SuppressLint("LogNotTimber")
         override fun doInBackground(vararg params: String?): String? {
-            var content: StringBuilder = StringBuilder()
+            val content = StringBuilder()
             val url = URL(params[0])
             val urlConnection = url.openConnection()
-            val inputStreamReader: InputStreamReader = InputStreamReader(urlConnection.inputStream)
-            val bufferedReader: BufferedReader = BufferedReader(inputStreamReader)
-            var line: String = ""
+            val inputStreamReader = InputStreamReader(urlConnection.inputStream)
+            val bufferedReader = BufferedReader(inputStreamReader)
+            var line: String
             try {
                 do {
                     line = bufferedReader.readLine()
                     if(line != null ) {
                         content.append(line)
                     }
-                } while (line !=null)
+                } while (true)
 
             } catch(e:Exception) {
                 Log.d("dmm", e.toString())
@@ -76,14 +76,26 @@ class MainActivity : AppCompatActivity() {
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
             handleWeatherInfo(result)
+            progressDialog.dismiss()
+        }
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+            progressDialog.setMessage("Loading")
+            progressDialog.setCancelable(false)
+            progressDialog.show()
         }
 
     }
 
     fun handleWeatherInfo(data: String?) {
-        val weatherObject:JSONObject = JSONObject(data)
-        val temp = weatherObject.getJSONObject("main").getString("temp")
-        //Toast.makeText(applicationContext,temp,Toast.LENGTH_LONG).show()
+        val weatherObject = JSONObject(data)
+        val temp = convertTempFtoC(weatherObject.getJSONObject("main").getLong("temp"))
+        val placeName = weatherObject.getString("name")
+        val weather = weatherObject.getJSONArray("weather").getJSONObject(0).getString("main")
+        placeTextView.text = placeName
+        tempTextView.text = "${temp}°C"
+        weatherTextView.text = weather
 
     }
 
@@ -102,22 +114,21 @@ class MainActivity : AppCompatActivity() {
         mPermissionGranted = false
         when(requestCode) {
             0 -> {
-                if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPermissionGranted = true
                 }
             }
         }
     }
 
+    @SuppressLint("LogNotTimber")
     private fun getUserLocation(callback: (Location) -> Unit) {
         val mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         var mLastKnownLocation: Location
         try {
             if(mPermissionGranted) {
                 val locationResult = mFusedLocationProviderClient.lastLocation
-                Log.d("wtf", locationResult.toString())
-
-                locationResult.addOnCompleteListener(this@MainActivity, OnCompleteListener {
+                locationResult.addOnCompleteListener(this, {
                     if(it.isSuccessful) {
                         mLastKnownLocation = it.result
                         callback(mLastKnownLocation)
@@ -127,6 +138,11 @@ class MainActivity : AppCompatActivity() {
         } catch (e: SecurityException) {
             Log.e("dmm", e.message)
         }
+    }
+
+    private fun convertTempFtoC(input:Long) : String {
+        val output = (input-32.0)/1.8
+        return output.toInt().toString()
     }
 
 }
