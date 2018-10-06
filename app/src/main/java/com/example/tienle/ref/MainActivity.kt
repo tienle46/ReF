@@ -3,6 +3,8 @@
 package com.example.tienle.ref
 
 import android.annotation.SuppressLint
+import android.app.FragmentManager
+import android.app.FragmentTransaction
 import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,8 +15,6 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
-import android.widget.TextView
-import android.widget.Toast
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         btnToMapActivity.setOnClickListener {
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
@@ -43,6 +44,15 @@ class MainActivity : AppCompatActivity() {
             val userLocationLng = it.longitude
             val urlWeather = "http://api.openweathermap.org/data/2.5/weather?lat=$userLocationLat&lon=$userLocationLng&appid=$apiKey&units=Imperial"
             GetWeatherInfo().execute(urlWeather)
+        }
+
+        val fragmentManager:FragmentManager = fragmentManager
+
+        chooseResBtn.setOnClickListener {
+            val fragmentTransaction: FragmentTransaction = fragmentManager.beginTransaction()
+            val listResFragment = RestaurantListFragment()
+            fragmentTransaction.add(R.id.content, listResFragment)
+            fragmentTransaction.commit()
         }
 
     }
@@ -144,6 +154,7 @@ class MainActivity : AppCompatActivity() {
         val output = (input-32.0)/1.8
         return output.toInt().toString()
     }
+
 
 }
 
