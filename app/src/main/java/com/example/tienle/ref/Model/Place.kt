@@ -4,13 +4,14 @@ import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import io.reactivex.annotations.NonNull
+import java.io.Serializable
 
 /**
  * Created by tienle on 10/6/18.
  */
 
 @Entity(tableName = "places")
-class Place{
+class Place: Serializable{
     @NonNull
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name ="ID")

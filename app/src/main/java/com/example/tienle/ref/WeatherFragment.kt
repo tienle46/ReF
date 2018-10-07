@@ -27,8 +27,8 @@ import java.io.InputStreamReader
 import java.net.URL
 
 /**
- * Created by tienle on 10/7/18.
- */
+* Created by tienle on 10/7/18.
+*/
 class WeatherFragment: Fragment() {
     private var mPermissionGranted: Boolean = false
     private lateinit var btnToMapActivity:Button

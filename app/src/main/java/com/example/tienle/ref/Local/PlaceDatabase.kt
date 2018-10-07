@@ -9,10 +9,10 @@ import com.example.tienle.ref.Model.Place
 import com.huma.room_for_asset.RoomAsset
 
 /**
- * Created by tienle on 10/6/18.
- */
+* Created by tienle on 10/6/18.
+*/
 
-@Database(entities = arrayOf(Place::class),version = DATABASE_VERSION)
+@Database(entities = [(Place::class)],version = DATABASE_VERSION)
 abstract class PlaceDatabase:RoomDatabase() {
     abstract fun placeDAO(): PlaceDAO
 
