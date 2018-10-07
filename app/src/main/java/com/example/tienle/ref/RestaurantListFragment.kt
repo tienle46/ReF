@@ -65,9 +65,4 @@ class RestaurantListFragment: Fragment() {
 
     }
 
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        compositeDisposable!!.clear()
-//
-//    }
 }
