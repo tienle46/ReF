@@ -30,7 +30,7 @@ android {
 
 repositories {
     mavenCentral()
-    maven { url "https://jitpack.io" }
+    maven { url 'https://mapbox.bintray.com/mapbox' }
 }
 
 dependencies {
@@ -55,6 +55,8 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.1.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'com.github.humazed:RoomAsset:1.0.3'
-
+    implementation 'com.android.support:customtabs:27.1.1'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation:0.20.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.20.0'
 
 }

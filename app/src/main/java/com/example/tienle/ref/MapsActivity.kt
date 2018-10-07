@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import com.example.tienle.ref.Model.Place
 import com.mapbox.android.core.location.LocationEngine
@@ -17,6 +18,7 @@ import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Marker
@@ -29,9 +31,17 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute
+import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineListener, PermissionsListener {
+
+    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
+    }
 
     private lateinit var mapView: MapView
     private lateinit var map: MapboxMap
@@ -39,10 +49,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     private lateinit var originLocation: Location
     private lateinit var originPosition: Point
     private lateinit var destinationPosition: Point
+    private lateinit var navigateButton: Button
 
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
     private var destinationMarker: Marker? = null
+    private var navigationMapRoute: NavigationMapRoute? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +69,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
             enableLocation()
             destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place!!.lattitude.toDouble(),place.longtitude.toDouble())))
             destinationPosition = Point.fromLngLat(place.lattitude.toDouble(),place.longtitude.toDouble())
-            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
+        }
+        navigateButton = findViewById(R.id.navigateButton)
+        navigateButton.setOnClickListener {
+            getRoute(originPosition,destinationPosition)
         }
 
     }
@@ -78,8 +93,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         }
     }
 
-    override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
-    }
 
     @SuppressLint("MissingPermission")
     override fun onConnected() {
@@ -89,12 +102,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     override fun onLocationChanged(location: Location?) {
         location?.let{
             originLocation = location
+            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
             setCameraPosition(location)
         }
     }
 
     override fun onMapReady(mapboxMap: MapboxMap?) {
+
     }
+
 
     @SuppressLint("MissingPermission")
     private fun initLocationEngine() {
@@ -105,11 +121,45 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         val lastLocation = locationEngine?.lastLocation
         if(lastLocation!= null) {
             originLocation = lastLocation
+            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
             setCameraPosition(lastLocation)
         } else {
             locationEngine?.addLocationEngineListener(this)
         }
 
+    }
+
+    private fun getRoute(origin:Point, destination:Point) {
+        NavigationRoute.builder(this)
+                .accessToken(Mapbox.getAccessToken()!!)
+                .origin(origin)
+                .destination(destination)
+                .build()
+                .getRoute(object : Callback<DirectionsResponse> {
+                    override fun onFailure(call: Call<DirectionsResponse>?, t: Throwable?) {
+                        Log.e("failure", "Error:${t?.message}")
+                    }
+
+                    override fun onResponse(call: Call<DirectionsResponse>?, response: Response<DirectionsResponse>?) {
+
+                        val routeResponse = response ?: return
+                        val body =routeResponse.body() ?: return
+                        if (body.routes().count() == 0 ) {
+                            return
+                        }
+                        if (navigationMapRoute != null) {
+
+                            navigationMapRoute?.removeRoute()
+
+                        } else {
+                            Toast.makeText(this@MapsActivity,"an lon",Toast.LENGTH_SHORT).show()
+
+                            navigationMapRoute = NavigationMapRoute(null, mapView, map, R.style.NavigationMapRoute)
+                        }
+                        Log.d("listRoutes", body.routes().first().toString())
+                        navigationMapRoute?.addRoute(body.routes().first())
+                    }
+                })
     }
 
     private fun setCameraPosition(location: Location) {
