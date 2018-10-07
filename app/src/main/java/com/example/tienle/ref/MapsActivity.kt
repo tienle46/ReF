@@ -1,11 +1,16 @@
 package com.example.tienle.ref
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
+import android.content.Intent
 import android.location.Location
+import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
+import android.widget.Toast
+import com.example.tienle.ref.Model.Place
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -25,6 +30,7 @@ import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
 
+@Suppress("DEPRECATION")
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineListener, PermissionsListener {
 
     private lateinit var mapView: MapView
@@ -46,8 +52,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync {mapboxMap ->
             map = mapboxMap
+            val intent = intent
+            val place: Place = intent.getSerializableExtra("clickedPlace") as Place
             enableLocation()
+            destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place!!.lattitude.toDouble(),place.longtitude.toDouble())))
+            destinationPosition = Point.fromLngLat(place.lattitude.toDouble(),place.longtitude.toDouble())
+            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
         }
+
     }
 
     private fun enableLocation() {
@@ -82,7 +94,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     }
 
     override fun onMapReady(mapboxMap: MapboxMap?) {
-
     }
 
     @SuppressLint("MissingPermission")
