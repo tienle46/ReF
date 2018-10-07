@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                 val locationResult = mFusedLocationProviderClient.lastLocation
                 locationResult.addOnCompleteListener(this, {
                     if(it.isSuccessful) {
-                        mLastKnownLocation = it.result
+                        mLastKnownLocation = it.result!!
                         callback(mLastKnownLocation)
                     }
                 })

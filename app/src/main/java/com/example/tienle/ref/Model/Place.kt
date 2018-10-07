@@ -13,26 +13,32 @@ import io.reactivex.annotations.NonNull
 class Place{
     @NonNull
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name ="id")
+    @ColumnInfo(name ="ID")
     var id:Int =0
 
-    @ColumnInfo(name ="name")
-    var name:String? = null
+    @NonNull
+    @ColumnInfo(name ="Name")
+    lateinit var name:String
 
-    @ColumnInfo(name ="address")
-    var address:String? = null
+    @NonNull
+    @ColumnInfo(name ="Address")
+    lateinit var address:String
 
-    @ColumnInfo(name ="path")
-    var path:String? = null
+    @NonNull
+    @ColumnInfo(name ="Path")
+    lateinit var path:String
 
-    @ColumnInfo(name ="category")
-    var category:String? = null
+    @NonNull
+    @ColumnInfo(name ="Category")
+    var category:Int = 1
 
-    @ColumnInfo(name ="lattitude")
-    var lattitude:Long = 0
+    @NonNull
+    @ColumnInfo(name ="Lattitude")
+    var lattitude:Float = 0F
 
-    @ColumnInfo(name ="longtitude")
-    var longtitude:Long = 0
+    @NonNull
+    @ColumnInfo(name ="Longtitude")
+    var longtitude:Float = 0F
 
     override fun toString(): String {
         return StringBuilder(name).
