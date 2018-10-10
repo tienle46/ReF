@@ -19,6 +19,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import com.example.tienle.ref.Common.Common
 import com.example.tienle.ref.Common.Helper
@@ -28,6 +29,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_weather.*
 
 /**
@@ -41,7 +43,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     private lateinit var placeTextView: TextView
     private lateinit var humidityTextView: TextView
     private lateinit var windTextView: TextView
-    private lateinit var mainTextView: TextView
+    private lateinit var weatherIconImgView: ImageView
     private var mGoogleApiClient:GoogleApiClient? = null
     private var mLocationRequest: LocationRequest?=null
     internal var openWeatherMap = OpenWeatherMap()
@@ -53,7 +55,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
         placeTextView = rootView.findViewById(R.id.placeTextView)
         humidityTextView = rootView.findViewById(R.id.humidityTextView)
         windTextView = rootView.findViewById(R.id.windTextView)
-        mainTextView = rootView.findViewById(R.id.mainTextView)
+        weatherIconImgView = rootView.findViewById(R.id.weatherIconImgView)
 
         chooseResBtn.setOnClickListener {
             val intent = Intent(activity, MapsActivity::class.java)
@@ -80,7 +82,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
         tempTextView.text = temp
         humidityTextView.text = data.main!!.humidity.toString() + "%"
         windTextView.text = data.wind!!.speed.toString() +"\nkm/h"
-        mainTextView.text = data.weather!![0].main.toString()
+        Picasso.get().load(Common.getImage(data.weather!![0].icon!!)).into(weatherIconImgView);
 
     }
 
