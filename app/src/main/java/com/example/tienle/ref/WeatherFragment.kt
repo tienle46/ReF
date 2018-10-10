@@ -20,7 +20,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import com.example.tienle.ref.Common.Common
 import com.example.tienle.ref.Common.Helper
 import com.example.tienle.ref.Model.OpenWeatherMap
@@ -29,7 +28,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.json.JSONObject
+import kotlinx.android.synthetic.main.fragment_weather.*
 
 /**
 * Created by tienle on 10/7/18.
@@ -37,26 +36,26 @@ import org.json.JSONObject
 class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private var mPermissionGranted: Boolean = false
-    private lateinit var btnToMapActivity:Button
     private lateinit var chooseResBtn:Button
     private lateinit var tempTextView: TextView
     private lateinit var placeTextView: TextView
-    private lateinit var weatherTextView: TextView
-    var mGoogleApiClient:GoogleApiClient? = null
-    var mLocationRequest: LocationRequest?=null
+    private lateinit var humidityTextView: TextView
+    private lateinit var windTextView: TextView
+    private lateinit var mainTextView: TextView
+    private var mGoogleApiClient:GoogleApiClient? = null
+    private var mLocationRequest: LocationRequest?=null
     internal var openWeatherMap = OpenWeatherMap()
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val apiKey: String = getString(R.string.weather_api_key)
-
         val rootView:View = inflater!!.inflate(R.layout.fragment_weather, container, false)
-        btnToMapActivity = rootView.findViewById(R.id.btnToMapActivity)
         chooseResBtn = rootView.findViewById(R.id.chooseResBtn)
         tempTextView = rootView.findViewById(R.id.tempTextView)
         placeTextView = rootView.findViewById(R.id.placeTextView)
-        weatherTextView = rootView.findViewById(R.id.weatherTextView)
+        humidityTextView = rootView.findViewById(R.id.humidityTextView)
+        windTextView = rootView.findViewById(R.id.windTextView)
+        mainTextView = rootView.findViewById(R.id.mainTextView)
 
-        btnToMapActivity.setOnClickListener {
+        chooseResBtn.setOnClickListener {
             val intent = Intent(activity, MapsActivity::class.java)
             startActivity(intent)
         }
@@ -76,9 +75,12 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
 
     @SuppressLint("SetTextI18n")
     fun handleWeatherInfo(data: OpenWeatherMap?) {
-        placeTextView.text = data!!.sys!!.country.toString()
-        tempTextView.text = data.main!!.temp.toString()
-        weatherTextView.text = data.weather!![0].main
+        var temp = convertTempFtoC(data!!.main!!.temp) + "°C"
+        placeTextView.text = data!!.name!!
+        tempTextView.text = temp
+        humidityTextView.text = data.main!!.humidity.toString() + "%"
+        windTextView.text = data.wind!!.speed.toString() +"\nkm/h"
+        mainTextView.text = data.weather!![0].main.toString()
 
     }
 
@@ -114,7 +116,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
 
-    private fun convertTempFtoC(input:Long) : String {
+    private fun convertTempFtoC(input:Double) : String {
         val output = (input-32.0)/1.8
         return output.toInt().toString()
     }
@@ -146,7 +148,6 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
     override fun onLocationChanged(p0: Location?) {
-        Log.d("urlSTring", Common.apiRequest(p0!!.latitude.toString(), p0!!.longitude.toString()))
         GetWeatherInfo().execute(Common.apiRequest(p0!!.latitude.toString(), p0!!.longitude.toString()))
     }
 
@@ -189,7 +190,6 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
             val mType = object:TypeToken<OpenWeatherMap>(){}.type
 
             openWeatherMap = gson.fromJson<OpenWeatherMap>(result,mType)
-            Log.d("weathermap",openWeatherMap.toString())
             handleWeatherInfo(openWeatherMap)
             pd.dismiss()
         }

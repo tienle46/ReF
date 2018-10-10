@@ -10,7 +10,7 @@ object Common{
 
     fun apiRequest(lat:String,lon:String):String {
         var sb = StringBuilder(API_LINK)
-        sb.append("?lat=${lat}&lon=${lon}&APPID=${API_KEY}&units=metric")
+        sb.append("?lat=${lat}&lon=${lon}&APPID=${API_KEY}&units=Imperial")
         return sb.toString()
     }
 
