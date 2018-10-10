@@ -3,6 +3,7 @@ package com.example.tienle.ref
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Intent
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.location.Location
 import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
@@ -12,6 +13,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.R.id.mapView
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -19,6 +21,7 @@ import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.api.directions.v5.models.DirectionsResponse
+import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.annotations.Marker
@@ -31,6 +34,8 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher
+import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute
 import retrofit2.Call
@@ -50,6 +55,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     private lateinit var originPosition: Point
     private lateinit var destinationPosition: Point
     private lateinit var navigateButton: Button
+    private var currentRoute: DirectionsRoute?=null
 
     private var locationEngine: LocationEngine? = null
     private var locationLayerPlugin: LocationLayerPlugin? = null
@@ -62,18 +68,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         Mapbox.getInstance(this, getString(R.string.map_box_access_token))
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
+        navigateButton = findViewById(R.id.navigateButton)
         mapView.getMapAsync {mapboxMap ->
             map = mapboxMap
             val intent = intent
             val place: Place = intent.getSerializableExtra("clickedPlace") as Place
             enableLocation()
             destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place!!.lattitude.toDouble(),place.longtitude.toDouble())))
-            destinationPosition = Point.fromLngLat(place.lattitude.toDouble(),place.longtitude.toDouble())
+            destinationPosition = Point.fromLngLat(place.longtitude.toDouble(),place.lattitude.toDouble())
+            navigateButton.setOnClickListener {
+                getRoute(originPosition,destinationPosition)
+                if (currentRoute == null) {
+                    Toast.makeText(this,"Map is not ready",Toast.LENGTH_SHORT).show()
+                } else {
+                    val options = NavigationLauncherOptions.builder()
+                            .directionsRoute(currentRoute)
+                            .shouldSimulateRoute(true)
+                            .build()
+                    NavigationLauncher.startNavigation(this, options)
+                }
+
+            }
         }
-        navigateButton = findViewById(R.id.navigateButton)
-        navigateButton.setOnClickListener {
-            getRoute(originPosition,destinationPosition)
-        }
+
 
     }
 
@@ -102,12 +119,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     override fun onLocationChanged(location: Location?) {
         location?.let{
             originLocation = location
-            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
+            originPosition = Point.fromLngLat(originLocation.longitude,originLocation.latitude)
             setCameraPosition(location)
         }
     }
 
     override fun onMapReady(mapboxMap: MapboxMap?) {
+
 
     }
 
@@ -121,7 +139,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         val lastLocation = locationEngine?.lastLocation
         if(lastLocation!= null) {
             originLocation = lastLocation
-            originPosition = Point.fromLngLat(originLocation.latitude,originLocation.longitude)
+            originPosition = Point.fromLngLat(originLocation.longitude,originLocation.latitude)
             setCameraPosition(lastLocation)
         } else {
             locationEngine?.addLocationEngineListener(this)
@@ -154,12 +172,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
                         } else {
                             Toast.makeText(this@MapsActivity,"an lon",Toast.LENGTH_SHORT).show()
 
-                            navigationMapRoute = NavigationMapRoute(null, mapView, map, R.style.NavigationMapRoute)
+                            navigationMapRoute = NavigationMapRoute(null,mapView,map)
                         }
-                        Log.d("listRoutes", body.routes().first().toString())
                         navigationMapRoute?.addRoute(body.routes().first())
+                        currentRoute = body.routes().first()
                     }
                 })
+
     }
 
     private fun setCameraPosition(location: Location) {

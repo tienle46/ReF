@@ -20,26 +20,36 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import com.google.android.gms.location.LocationServices
+import android.widget.Toast
+import com.example.tienle.ref.Common.Common
+import com.example.tienle.ref.Common.Helper
+import com.example.tienle.ref.Model.OpenWeatherMap
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.URL
 
 /**
 * Created by tienle on 10/7/18.
 */
-class WeatherFragment: Fragment() {
+class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+
     private var mPermissionGranted: Boolean = false
     private lateinit var btnToMapActivity:Button
     private lateinit var chooseResBtn:Button
     private lateinit var tempTextView: TextView
     private lateinit var placeTextView: TextView
     private lateinit var weatherTextView: TextView
+    var mGoogleApiClient:GoogleApiClient? = null
+    var mLocationRequest: LocationRequest?=null
+    internal var openWeatherMap = OpenWeatherMap()
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val rootView:View = inflater!!.inflate(R.layout.fragment_weather, container, false)
         val apiKey: String = getString(R.string.weather_api_key)
+
+        val rootView:View = inflater!!.inflate(R.layout.fragment_weather, container, false)
         btnToMapActivity = rootView.findViewById(R.id.btnToMapActivity)
         chooseResBtn = rootView.findViewById(R.id.chooseResBtn)
         tempTextView = rootView.findViewById(R.id.tempTextView)
@@ -51,13 +61,7 @@ class WeatherFragment: Fragment() {
             startActivity(intent)
         }
         locationPermission()
-
-        getUserLocation {
-            val userLocationLat = it.latitude
-            val userLocationLng = it.longitude
-            val urlWeather = "http://api.openweathermap.org/data/2.5/weather?lat=$userLocationLat&lon=$userLocationLng&appid=$apiKey&units=Imperial"
-            GetWeatherInfo().execute(urlWeather)
-        }
+        buildGoogleApiClient()
 
         val fragmentManager: FragmentManager = fragmentManager
 
@@ -70,56 +74,11 @@ class WeatherFragment: Fragment() {
         return rootView
     }
 
-    @Suppress("DEPRECATION")
-    @SuppressLint("StaticFieldLeak")
-    inner class GetWeatherInfo: AsyncTask<String, Void, String?>() {
-        private val progressDialog = ProgressDialog(activity)
-        @SuppressLint("LogNotTimber")
-        override fun doInBackground(vararg params: String?): String? {
-            val content = StringBuilder()
-            val url = URL(params[0])
-            val urlConnection = url.openConnection()
-            val inputStreamReader = InputStreamReader(urlConnection.inputStream)
-            val bufferedReader = BufferedReader(inputStreamReader)
-            var line: String
-            try {
-                do {
-                    line = bufferedReader.readLine()
-                    if(line != null ) {
-                        content.append(line)
-                    }
-                } while (true)
-
-            } catch(e:Exception) {
-                Log.d("dmm", e.toString())
-            }
-            return content.toString()
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            handleWeatherInfo(result)
-            progressDialog.dismiss()
-        }
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-            progressDialog.setMessage("Loading")
-            progressDialog.setCancelable(false)
-            progressDialog.show()
-        }
-
-    }
-
     @SuppressLint("SetTextI18n")
-    fun handleWeatherInfo(data: String?) {
-        val weatherObject = JSONObject(data)
-        val temp = convertTempFtoC(weatherObject.getJSONObject("main").getLong("temp"))
-        val placeName = weatherObject.getString("name")
-        val weather = weatherObject.getJSONArray("weather").getJSONObject(0).getString("main")
-        placeTextView.text = placeName
-        tempTextView.text = "${temp}°C"
-        weatherTextView.text = weather
+    fun handleWeatherInfo(data: OpenWeatherMap?) {
+        placeTextView.text = data!!.sys!!.country.toString()
+        tempTextView.text = data.main!!.temp.toString()
+        weatherTextView.text = data.weather!![0].main
 
     }
 
@@ -140,32 +99,100 @@ class WeatherFragment: Fragment() {
             0 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPermissionGranted = true
+                    buildGoogleApiClient()
                 }
             }
         }
     }
 
-    @SuppressLint("LogNotTimber")
-    private fun getUserLocation(callback: (Location) -> Unit) {
-        val mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
-        var mLastKnownLocation: Location
-        try {
-            if(mPermissionGranted) {
-                val locationResult = mFusedLocationProviderClient.lastLocation
-                locationResult.addOnCompleteListener(activity, {
-                    if(it.isSuccessful) {
-                        mLastKnownLocation = it.result!!
-                        callback(mLastKnownLocation)
-                    }
-                })
-            }
-        } catch (e: SecurityException) {
-            Log.e("dmm", e.message)
-        }
+    private fun buildGoogleApiClient() {
+        mGoogleApiClient = GoogleApiClient.Builder(activity)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
     }
+
 
     private fun convertTempFtoC(input:Long) : String {
         val output = (input-32.0)/1.8
         return output.toInt().toString()
+    }
+
+    override fun onConnected(p0: Bundle?) {
+        createLocationRequest()
+    }
+
+    private fun createLocationRequest() {
+        mLocationRequest = LocationRequest()
+        mLocationRequest!!.interval = 10000
+        mLocationRequest!!.fastestInterval = 5000
+        mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        try {
+            if(mPermissionGranted) {
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this)
+            }
+        } catch (e:SecurityException) {
+            Log.e("Error:", e.message)
+        }
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+        mGoogleApiClient!!.connect()
+    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        Log.e("Error:", p0.errorMessage)
+    }
+
+    override fun onLocationChanged(p0: Location?) {
+        Log.d("urlSTring", Common.apiRequest(p0!!.latitude.toString(), p0!!.longitude.toString()))
+        GetWeatherInfo().execute(Common.apiRequest(p0!!.latitude.toString(), p0!!.longitude.toString()))
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if(mGoogleApiClient != null) {
+            mGoogleApiClient!!.connect()
+        }
+    }
+
+    override fun onDestroy() {
+        mGoogleApiClient!!.disconnect()
+        super.onDestroy()
+    }
+
+    inner class GetWeatherInfo(): AsyncTask<String, Void, String>() {
+        internal var pd = ProgressDialog(activity)
+        override fun doInBackground(vararg params: String?): String {
+            var stream:String?= null
+            var urlString = params[0]
+
+            val http = Helper()
+            stream = http.getHttpData(urlString)
+            return stream
+
+        }
+
+        override fun onPreExecute() {
+            pd.setTitle("Loading")
+            pd.show()
+            super.onPreExecute()
+        }
+
+        override fun onPostExecute(result: String?) {
+            super.onPostExecute(result)
+            if(result!!.contains("Error: Not found city"))
+                pd.dismiss()
+
+            val gson = Gson()
+            val mType = object:TypeToken<OpenWeatherMap>(){}.type
+
+            openWeatherMap = gson.fromJson<OpenWeatherMap>(result,mType)
+            Log.d("weathermap",openWeatherMap.toString())
+            handleWeatherInfo(openWeatherMap)
+            pd.dismiss()
+        }
+
     }
 }
