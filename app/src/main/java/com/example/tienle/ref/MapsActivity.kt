@@ -191,7 +191,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     @SuppressLint("MissingPermission")
     private fun initLocationLayer() {
         locationLayerPlugin = LocationLayerPlugin(mapView,map,locationEngine)
-        locationLayerPlugin?.setLocationLayerEnabled(true)
+        locationLayerPlugin?.isLocationLayerEnabled = true
         locationLayerPlugin?.cameraMode = CameraMode.TRACKING
         locationLayerPlugin?.renderMode = RenderMode.NORMAL
 
