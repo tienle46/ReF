@@ -8,13 +8,12 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import com.example.tienle.ref.Model.Place
-import com.example.tienle.ref.Model.PlaceWithImage
+import com.example.tienle.ref.model.PlaceWithImage
 
 /**
- * Created by tienle on 10/11/18.
- */
-class RestaurantAdapter(private val context: Context,
+* Created by tienle on 10/11/18.
+*/
+class RestaurantAdapter(context: Context,
                         private val dataSource: ArrayList<PlaceWithImage>): BaseAdapter() {
     private val inflater: LayoutInflater
             = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

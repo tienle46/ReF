@@ -1,6 +1,4 @@
-package com.example.tienle.ref.Model
-
-import java.io.FileDescriptor
+package com.example.tienle.ref.model
 
 /**
  * Created by tienle on 10/10/18.

@@ -1,11 +1,11 @@
-package com.example.tienle.ref.Database
+package com.example.tienle.ref.database
 
-import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.model.Place
 import io.reactivex.Flowable
 
 /**
- * Created by tienle on 10/6/18.
- */
+* Created by tienle on 10/6/18.
+*/
 interface IPlaceDataSource {
     val allPlaces:Flowable<List<Place>>
     fun getPlaceById(placeId:Int):Flowable<Place>

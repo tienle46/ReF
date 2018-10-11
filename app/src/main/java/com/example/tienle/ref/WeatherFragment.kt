@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,16 +20,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import com.example.tienle.ref.Common.Common
-import com.example.tienle.ref.Common.Helper
-import com.example.tienle.ref.Model.OpenWeatherMap
+import com.example.tienle.ref.common.Common
+import com.example.tienle.ref.common.Helper
+import com.example.tienle.ref.model.OpenWeatherMap
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.fragment_weather.*
 
 /**
 * Created by tienle on 10/7/18.
@@ -78,12 +76,12 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
 
     @SuppressLint("SetTextI18n")
     fun handleWeatherInfo(data: OpenWeatherMap?) {
-        var temp = convertTempFtoC(data!!.main!!.temp) + "°C"
-        placeTextView.text = "Welcome to \n"+data!!.name!!
+        val temp = convertTempFtoC(data!!.main!!.temp) + "°C"
+        placeTextView.text = "Welcome to \n"+ data.name!!
         tempTextView.text = temp
         humidityTextView.text = data.main!!.humidity.toString() + "%"
         windTextView.text = data.wind!!.speed.toString() +"\nkm/h"
-        Picasso.get().load(Common.getImage(data.weather!![0].icon!!)).into(weatherIconImgView);
+        Picasso.get().load(Common.getImage(data.weather!![0].icon!!)).into(weatherIconImgView)
 
     }
 
@@ -158,7 +156,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
     override fun onLocationChanged(p0: Location?) {
-        GetWeatherInfo().execute(Common.apiRequest(p0!!.latitude.toString(), p0!!.longitude.toString()))
+        GetWeatherInfo().execute(Common.apiRequest(p0!!.latitude.toString(), p0.longitude.toString()))
     }
 
     override fun onStart() {
@@ -173,11 +171,11 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
         super.onDestroy()
     }
 
-    inner class GetWeatherInfo(): AsyncTask<String, Void, String>() {
+    inner class GetWeatherInfo: AsyncTask<String, Void, String>() {
         private var pd = ProgressDialog(activity)
         override fun doInBackground(vararg params: String?): String {
-            var stream: String?
-            var urlString = params[0]
+            val stream: String?
+            val urlString = params[0]
 
             val http = Helper()
             stream = http.getHttpData(urlString)

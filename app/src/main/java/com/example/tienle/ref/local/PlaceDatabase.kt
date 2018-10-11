@@ -1,11 +1,10 @@
-package com.example.tienle.ref.Local
+package com.example.tienle.ref.local
 
 import android.arch.persistence.room.Database
-import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import android.content.Context
-import com.example.tienle.ref.Local.PlaceDatabase.Companion.DATABASE_VERSION
-import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.local.PlaceDatabase.Companion.DATABASE_VERSION
+import com.example.tienle.ref.model.Place
 import com.huma.room_for_asset.RoomAsset
 
 /**

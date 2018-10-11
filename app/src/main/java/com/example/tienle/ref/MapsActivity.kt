@@ -1,19 +1,17 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.tienle.ref
 
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
-import android.content.Intent
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.location.Location
-import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
-import com.example.tienle.ref.Model.Place
-import com.example.tienle.ref.R.id.mapView
+import com.example.tienle.ref.model.Place
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
@@ -80,7 +78,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
             val intent = intent
             val place: Place = intent.getSerializableExtra("clickedPlace") as Place
             enableLocation()
-            destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place!!.lattitude.toDouble(),place.longtitude.toDouble())))
+            destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place.lattitude.toDouble(),place.longtitude.toDouble())))
             destinationPosition = Point.fromLngLat(place.longtitude.toDouble(),place.lattitude.toDouble())
             navigateButton.setOnClickListener {
                 if (currentRoute == null) {

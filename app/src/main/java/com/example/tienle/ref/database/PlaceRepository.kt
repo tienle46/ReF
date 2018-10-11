@@ -1,11 +1,11 @@
-package com.example.tienle.ref.Database
+package com.example.tienle.ref.database
 
-import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.model.Place
 import io.reactivex.Flowable
 
 /**
- * Created by tienle on 10/6/18.
- */
+* Created by tienle on 10/6/18.
+*/
 class PlaceRepository(private val mLocationDataSource: IPlaceDataSource):IPlaceDataSource {
     override val allPlaces: Flowable<List<Place>>
         get() = mLocationDataSource.allPlaces

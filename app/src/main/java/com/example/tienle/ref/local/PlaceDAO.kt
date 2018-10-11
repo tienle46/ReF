@@ -1,12 +1,12 @@
-package com.example.tienle.ref.Local
+package com.example.tienle.ref.local
 
 import android.arch.persistence.room.*
-import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.model.Place
 import io.reactivex.Flowable
 
 /**
- * Created by tienle on 10/6/18.
- */
+* Created by tienle on 10/6/18.
+*/
 
 @Dao
 interface PlaceDAO {

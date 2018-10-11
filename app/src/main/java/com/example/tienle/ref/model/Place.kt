@@ -1,4 +1,4 @@
-package com.example.tienle.ref.Model
+package com.example.tienle.ref.model
 
 import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
@@ -7,8 +7,8 @@ import io.reactivex.annotations.NonNull
 import java.io.Serializable
 
 /**
- * Created by tienle on 10/6/18.
- */
+* Created by tienle on 10/6/18.
+*/
 
 @Entity(tableName = "places")
 class Place: Serializable{
