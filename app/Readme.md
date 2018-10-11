@@ -1,1 +1,0 @@
-ReF - A weather based restaurant finder.
