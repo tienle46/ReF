@@ -2,7 +2,9 @@ package com.example.tienle.ref
 
 import android.app.Fragment
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,7 @@ import com.example.tienle.ref.Database.PlaceRepository
 import com.example.tienle.ref.Local.PlaceDataSource
 import com.example.tienle.ref.Local.PlaceDatabase
 import com.example.tienle.ref.Model.Place
+import com.example.tienle.ref.Model.PlaceWithImage
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -23,8 +26,9 @@ import io.reactivex.schedulers.Schedulers
 
 class RestaurantListFragment: Fragment() {
 
-    private lateinit var adapter:ArrayAdapter<*>
+    private lateinit var adapter:RestaurantAdapter
      private var placeList: MutableList<Place> = ArrayList()
+    private var placeWithImageList = ArrayList<PlaceWithImage>()
 
     private var compositeDisposable: CompositeDisposable?=null
     private var placeRepository:PlaceRepository?=null
@@ -32,7 +36,7 @@ class RestaurantListFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val rootView:View = inflater!!.inflate(R.layout.fragment_restaurent_list, container, false)
         compositeDisposable = CompositeDisposable()
-        adapter = ArrayAdapter(activity, android.R.layout.simple_list_item_1, placeList)
+        adapter = RestaurantAdapter(activity,placeWithImageList)
         val listRestaurant:ListView = rootView.findViewById(R.id.listRestaurant)
         listRestaurant.adapter = adapter
 
@@ -40,7 +44,8 @@ class RestaurantListFragment: Fragment() {
         placeRepository = PlaceRepository.getInstance(PlaceDataSource.getInstance(placeDatabase.placeDAO()))
 
         loadData()
-        
+
+
         listRestaurant.setOnItemClickListener { _, _, position, _ ->
                 val clickedPlace = placeDatabase.placeDAO().getPlaceById(position+1)
                 clickedPlace.observeOn(AndroidSchedulers.mainThread())
@@ -69,6 +74,14 @@ class RestaurantListFragment: Fragment() {
     private fun onGetAllPlaceSuccess(places: List<Place>) {
         placeList.clear()
         placeList.addAll(places)
+        for (place in placeList) {
+            val imageName = place.path.split("/")[2]
+            val imageInputStream = activity.resources.assets.open(imageName)
+            val image:Drawable = Drawable.createFromStream(imageInputStream,null)
+            val placeWithImage = PlaceWithImage(place.id,place.name,place.address,image)
+            placeWithImageList.add(placeWithImage)
+        }
+
         adapter.notifyDataSetChanged()
 
     }

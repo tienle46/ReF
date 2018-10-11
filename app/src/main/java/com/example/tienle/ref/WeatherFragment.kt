@@ -78,7 +78,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     @SuppressLint("SetTextI18n")
     fun handleWeatherInfo(data: OpenWeatherMap?) {
         var temp = convertTempFtoC(data!!.main!!.temp) + "°C"
-        placeTextView.text = data!!.name!!
+        placeTextView.text = "Welcome to \n"+data!!.name!!
         tempTextView.text = temp
         humidityTextView.text = data.main!!.humidity.toString() + "%"
         windTextView.text = data.wind!!.speed.toString() +"\nkm/h"

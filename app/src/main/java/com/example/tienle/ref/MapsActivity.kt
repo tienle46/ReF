@@ -55,6 +55,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     private lateinit var originPosition: Point
     private lateinit var destinationPosition: Point
     private lateinit var navigateButton: Button
+    private lateinit var getRouteBtn: Button
     private var currentRoute: DirectionsRoute?=null
 
     private var locationEngine: LocationEngine? = null
@@ -69,6 +70,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         mapView = findViewById(R.id.mapView)
         mapView.onCreate(savedInstanceState)
         navigateButton = findViewById(R.id.navigateButton)
+        getRouteBtn = findViewById(R.id.getRouteBtn)
         mapView.getMapAsync {mapboxMap ->
             map = mapboxMap
             val intent = intent
@@ -77,9 +79,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
             destinationMarker = map.addMarker(MarkerOptions().position(LatLng(place!!.lattitude.toDouble(),place.longtitude.toDouble())))
             destinationPosition = Point.fromLngLat(place.longtitude.toDouble(),place.lattitude.toDouble())
             navigateButton.setOnClickListener {
-                getRoute(originPosition,destinationPosition)
                 if (currentRoute == null) {
-                    Toast.makeText(this,"Map is not ready",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Please get direction first", Toast.LENGTH_SHORT).show()
                 } else {
                     val options = NavigationLauncherOptions.builder()
                             .directionsRoute(currentRoute)
@@ -87,7 +88,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
                             .build()
                     NavigationLauncher.startNavigation(this, options)
                 }
-
+            }
+            getRouteBtn.setOnClickListener {
+                getRoute(originPosition,destinationPosition)
             }
         }
 
@@ -170,7 +173,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
                             navigationMapRoute?.removeRoute()
 
                         } else {
-                            Toast.makeText(this@MapsActivity,"an lon",Toast.LENGTH_SHORT).show()
 
                             navigationMapRoute = NavigationMapRoute(null,mapView,map)
                         }
