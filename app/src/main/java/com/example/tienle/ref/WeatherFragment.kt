@@ -174,9 +174,9 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
     inner class GetWeatherInfo(): AsyncTask<String, Void, String>() {
-        internal var pd = ProgressDialog(activity)
+        private var pd = ProgressDialog(activity)
         override fun doInBackground(vararg params: String?): String {
-            var stream:String?= null
+            var stream: String?
             var urlString = params[0]
 
             val http = Helper()

@@ -62,6 +62,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     private var locationLayerPlugin: LocationLayerPlugin? = null
     private var destinationMarker: Marker? = null
     private var navigationMapRoute: NavigationMapRoute? = null
+    private lateinit var pd: ProgressDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +72,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         mapView.onCreate(savedInstanceState)
         navigateButton = findViewById(R.id.navigateButton)
         getRouteBtn = findViewById(R.id.getRouteBtn)
+        pd = ProgressDialog(this@MapsActivity)
+        pd.setTitle("Loading")
+        pd.show()
         mapView.getMapAsync {mapboxMap ->
             map = mapboxMap
             val intent = intent
@@ -95,12 +99,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
         }
 
 
+
     }
 
     private fun enableLocation() {
         if(PermissionsManager.areLocationPermissionsGranted(this)) {
             initLocationEngine()
             initLocationLayer()
+            pd.dismiss()
         } else {
             permissionsManager = PermissionsManager(this)
             permissionsManager.requestLocationPermissions(this)
@@ -128,8 +134,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationEngineList
     }
 
     override fun onMapReady(mapboxMap: MapboxMap?) {
-
-
+//        pd.dismiss()
+        Toast.makeText(this,"adasdasdas",Toast.LENGTH_LONG).show()
     }
 
 
