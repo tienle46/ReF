@@ -47,7 +47,6 @@
         android:layout_toEndOf="@+id/chooseResBtn"
         android:background="@drawable/round_border"
         android:gravity="center"
-        android:text="60"
         android:textSize="25dp"
         android:textColor="#fff" />
 
@@ -72,7 +71,6 @@
         android:layout_centerVertical="true"
         android:background="@drawable/round_border"
         android:gravity="center"
-        android:text="60"
         android:textSize="30dp"
         android:textColor="#fff" />
 
@@ -97,7 +95,6 @@
         android:layout_toStartOf="@+id/chooseResBtn"
         android:background="@drawable/round_border"
         android:gravity="center"
-        android:text="60"
         android:textSize="30dp"
         android:textColor="#fff" />
 

@@ -61,8 +61,9 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
             val intent = Intent(activity, MapsActivity::class.java)
             startActivity(intent)
         }
-        locationPermission()
         buildGoogleApiClient()
+
+
 
         val fragmentManager: FragmentManager = fragmentManager
 
@@ -90,9 +91,11 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
         if (ContextCompat.checkSelfPermission(activity,android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mPermissionGranted = true
+            mGoogleApiClient!!.connect()
         } else {
+            mGoogleApiClient!!.disconnect()
             val permission = arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION)
-            ActivityCompat.requestPermissions(activity, permission,0)
+            requestPermissions( permission,0)
         }
     }
 
@@ -103,7 +106,7 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
             0 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPermissionGranted = true
-                    buildGoogleApiClient()
+                    mGoogleApiClient!!.connect()
                 }
             }
         }
@@ -124,7 +127,12 @@ class WeatherFragment: Fragment(), GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
 
     override fun onConnected(p0: Bundle?) {
-        createLocationRequest()
+        locationPermission()
+
+        if(mPermissionGranted) {
+            createLocationRequest()
+
+        }
     }
 
     private fun createLocationRequest() {
